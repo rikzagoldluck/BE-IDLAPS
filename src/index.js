@@ -6,6 +6,7 @@ const cors = require("cors");
 const eventsRoutes = require("./routes/events");
 const categoriesRoutes = require("./routes/categories");
 const ridersRoutes = require("./routes/riders");
+const teamsRoutes = require("./routes/teams");
 
 const middlewareLogRequest = require("./middleware/logs");
 // const upload = require('./middleware/multer');
@@ -19,6 +20,7 @@ app.use("/assets", express.static("public/images"));
 app.use("/events", eventsRoutes);
 app.use("/categories", categoriesRoutes);
 app.use("/riders", ridersRoutes);
+app.use("/teams", teamsRoutes);
 // app.post("/upload", upload.single("photo"), (req, res) => {
 //   res.json({
 //     message: "Upload berhasil",

@@ -1,36 +1,59 @@
-const RidersModel = require("../models/riders");
+const { PrismaClient } = require("@prisma/client");
 
-const getAllRiders = async (req, res) => {
+const prisma = new PrismaClient();
+
+const getRiders = async (req, res) => {
   try {
-    const [data] = await RidersModel.getAllRiders();
+    const response = await prisma.riders.findMany({
+      include: {
+        events: {
+          select: {
+            name: true,
+          },
+        },
+        teams: {
+          select: {
+            name: true,
+          },
+        },
+        categories: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+    res.status(200).json({
+      message: "GET all riders success",
+      data: response,
+    });
+  } catch (error) {
+    res.status(500).json({ status: "Server Error", message: error.message });
+  }
+};
+
+const getRider = async (req, res) => {
+  const { idRider } = req.params;
+  try {
+    const data = await prisma.riders.findUnique({
+      where: {
+        id: Number(idRider),
+      },
+    });
 
     res.json({
-      message: "GET all riders success",
+      message: "GET rider success",
       data: data,
     });
   } catch (error) {
-    res.status(500).json({
-      message: "Server Error",
-      serverMessage: error,
-    });
+    res.status(500).json({ status: "Server Error", message: error.message });
   }
 };
 
 const createNewRider = async (req, res) => {
   const { body } = req;
 
-  if (
-    !body.name ||
-    !body.age ||
-    !body.nationality ||
-    !body.team_name ||
-    !body.bib ||
-    !body.vci_num ||
-    !body.mac_no ||
-    !body.run_lap ||
-    !body.lap_no ||
-    !body.run
-  ) {
+  if (!body.name || !body.nationality || !body.mac_no) {
     return res.status(400).json({
       message: "Anda mengirimkan data yang salah",
       data: null,
@@ -38,15 +61,27 @@ const createNewRider = async (req, res) => {
   }
 
   try {
-    await RidersModel.createNewRider(body);
+    const response = await prisma.riders.create({
+      data: {
+        ...body,
+        age: Number(body.age),
+        team_id: Number(body.team_id),
+        id_b: Number(body.id_b),
+        run_lap: Number(body.run_lap),
+        lap_no: Number(body.lap_no),
+        event_id: Number(body.event_id),
+        category_id: Number(body.category_id),
+      },
+    });
+
     res.status(201).json({
       message: "CREATE new rider success",
-      data: body,
+      data: response,
     });
   } catch (error) {
     res.status(500).json({
-      message: "Server Error",
-      serverMessage: error,
+      status: "Server Error",
+      message: error.message,
     });
   }
 };
@@ -54,19 +89,38 @@ const createNewRider = async (req, res) => {
 const updateRider = async (req, res) => {
   const { idRider } = req.params;
   const { body } = req;
+
+  if (!body.name || !body.nationality || !body.mac_no) {
+    return res.status(400).json({
+      message: "Anda mengirimkan data yang salah",
+      data: null,
+    });
+  }
+
   try {
-    await RidersModel.updateRider(body, idRider);
+    const rider = await prisma.riders.update({
+      where: {
+        id: Number(idRider),
+      },
+      data: {
+        ...body,
+        age: Number(body.age),
+        team_id: Number(body.team_id),
+        id_b: Number(body.id_b),
+        run_lap: Number(body.run_lap),
+        lap_no: Number(body.lap_no),
+        event_id: Number(body.event_id),
+        category_id: Number(body.category_id),
+      },
+    });
     res.json({
       message: "UPDATE rider success",
-      data: {
-        id: idRider,
-        ...body,
-      },
+      data: rider,
     });
   } catch (error) {
     res.status(500).json({
-      message: "Server Error",
-      serverMessage: error,
+      status: "Server Error",
+      message: error.message,
     });
   }
 };
@@ -74,21 +128,27 @@ const updateRider = async (req, res) => {
 const deleteRider = async (req, res) => {
   const { idRider } = req.params;
   try {
-    await RidersModel.deleteRider(idRider);
+    const rider = await prisma.riders.delete({
+      where: {
+        id: Number(idRider),
+      },
+    });
+
     res.json({
       message: "DELETE rider success",
-      data: null,
+      data: rider,
     });
   } catch (error) {
     res.status(500).json({
-      message: "Server Error",
-      serverMessage: error,
+      status: "Server Error",
+      message: error.message,
     });
   }
 };
 
 module.exports = {
-  getAllRiders,
+  getRiders,
+  getRider,
   createNewRider,
   updateRider,
   deleteRider,

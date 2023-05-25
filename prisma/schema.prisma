@@ -26,6 +26,14 @@ model categories {
   @@index([event_id], map: "event_id")
 }
 
+model teams {
+  id                 Int                  @id @default(autoincrement())
+  name               String?              @db.VarChar(100)
+  province           String?              @db.VarChar(100)
+  nationality        String?              @db.VarChar(5)
+  riders             riders[]
+}
+
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
 model event_participants {
   event_id          Int?
@@ -95,7 +103,7 @@ model riders {
   name               String?              @db.VarChar(100)
   age                Int?
   nationality        String?              @db.VarChar(5)
-  team_name          String?              @db.VarChar(50)
+  team_id            Int
   bib                String?              @db.VarChar(5)
   vci_num            String?              @db.VarChar(10)
   id_b               Int?
@@ -112,7 +120,10 @@ model riders {
   race_start         race_start[]
   categories         categories           @relation(fields: [category_id], references: [id], onUpdate: Restrict, map: "fk_category")
   events             events               @relation(fields: [event_id], references: [id], onUpdate: Restrict, map: "fk_event")
+  teams              teams?               @relation(fields: [team_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "fk_team")
 
   @@index([category_id], map: "fk_category")
   @@index([event_id], map: "fk_event")
+  @@index([team_id], map: "fk_team")
+
 }

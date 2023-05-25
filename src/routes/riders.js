@@ -8,7 +8,8 @@ const router = express.Router();
 router.post("/", RidersController.createNewRider);
 
 // READ - GET
-router.get("/", RidersController.getAllRiders);
+router.get("/", RidersController.getRiders);
+router.get("/:idRider", RidersController.getRider);
 
 // UPDATE - PATCH
 router.patch("/:idRider", RidersController.updateRider);
