@@ -7,16 +7,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
 model categories {
   id                 Int                  @id @default(autoincrement())
   name               String?              @db.VarChar(100)
-  description        String?              @db.VarChar(100)
-  start_time         Int?            
-  end_time           Int?            
+  description        String?              @db.VarChar(100) 
+  start_time         String               @db.VarChar(100)   @default("0")
+  end_time           String               @db.VarChar(100)   @default("0")
+  start_sch          String                @db.VarChar(100)   @default("0") 
+  end_sch            String               @db.VarChar(100)    @default("0")
   sex                String?              @db.VarChar(100)
   distance           Int?
   lap                Int?
   run                Boolean?             @default(false)
+  race_today         Boolean?             @default(false)
   event_id           Int?
   events             events?              @relation(fields: [event_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "categories_ibfk_1")
   event_participants event_participants[] @ignore
@@ -50,11 +54,12 @@ model event_participants {
   @@ignore
 }
 
+/// Satu event bisa memiliki banyak categor
 model events {
   id                 Int                  @id @default(autoincrement())
   name               String?              @db.VarChar(100)
-  start_datetime     Int?            
-  end_datetime       Int?            
+  start_datetime     String               @db.VarChar(100)  @default("0")
+  end_datetime       String               @db.VarChar(100)  @default("0")
   location           String?              @db.VarChar(70)
   desc_1             String?              @db.VarChar(100)
   desc_2             String?              @db.VarChar(100)
@@ -65,24 +70,20 @@ model events {
   registration_fee   Int?
   categories         categories[]
   event_participants event_participants[] @ignore
-  race_results       race_results[]
   race_start         race_start[]
   riders             riders[]
 }
 
 model race_results {
   result_id   Int         @id @default(autoincrement())
-  event_id    Int?
   rider_id    Int?
   category_id Int?
-  lap_number  Int?
-  finish_time Int?
-  events      events?     @relation(fields: [event_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "race_results_ibfk_1")
+  lap_number  Int?        @default(0)
+  finish_time String        @default("0") @db.VarChar(100)
   riders      riders?     @relation(fields: [rider_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "race_results_ibfk_2")
   categories  categories? @relation(fields: [category_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "race_results_ibfk_3")
 
   @@index([category_id], map: "category_id")
-  @@index([event_id], map: "event_id")
   @@index([rider_id], map: "rider_id")
 }
 
@@ -106,13 +107,12 @@ model riders {
   team_id            Int
   bib                String?              @db.VarChar(5)
   vci_num            String?              @db.VarChar(10)
-  id_b               Int?
+  id_beacon          Int?
   mac_no             String?              @db.VarChar(20)
   note               String?              @db.VarChar(20)
   note_1             String?              @db.VarChar(100)
-  run_lap            Int?
-  lap_no             Int?
-  run                Boolean?             @default(true)
+  run                Boolean?             @default(false)
+  total_waktu        String               @db.VarChar(100)    @default("0")
   event_id           Int
   category_id        Int
   event_participants event_participants[] @ignore

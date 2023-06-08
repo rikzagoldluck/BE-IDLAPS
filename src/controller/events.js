@@ -52,8 +52,6 @@ const createNewEvent = async (req, res) => {
     const response = await prisma.events.create({
       data: {
         ...body,
-        start_datetime: Number(body.start_datetime),
-        end_datetime: Number(body.end_datetime),
         distance: Number(body.distance),
         registration_fee: Number(body.registration_fee),
       },
@@ -95,8 +93,6 @@ const updateEvent = async (req, res) => {
       },
       data: {
         ...body,
-        start_datetime: Number(body.start_datetime),
-        end_datetime: Number(body.end_datetime),
         distance: Number(body.distance),
         registration_fee: Number(body.registration_fee),
       },

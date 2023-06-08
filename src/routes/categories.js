@@ -10,9 +10,13 @@ router.post("/", CategoriesController.createNewCategory);
 // READ - GET
 router.get("/", CategoriesController.getAllCategories);
 router.get("/:idCategory", CategoriesController.getCategory);
+router.get("/events/:id", CategoriesController.getCategoriesByEvent);
 
 // UPDATE - PATCH
 router.patch("/:idCategory", CategoriesController.updateCategory);
+router.patch("/start_time/:id", CategoriesController.updateStartTime);
+router.patch("/run/:id/:status", CategoriesController.updateRun);
+router.patch("/race_today/:id/:status", CategoriesController.updateRaceToday);
 
 // DELETE - DELETE
 router.delete("/:idCategory", CategoriesController.deleteCategory);

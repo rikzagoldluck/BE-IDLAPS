@@ -1,0 +1,11 @@
+-- AlterTable
+ALTER TABLE `categories` ADD COLUMN `end_sch` INTEGER NOT NULL DEFAULT 0,
+    ADD COLUMN `race_today` BOOLEAN NULL DEFAULT false,
+    ADD COLUMN `start_sch` INTEGER NOT NULL DEFAULT 0,
+    MODIFY `start_time` INTEGER NULL DEFAULT 0,
+    MODIFY `end_time` INTEGER NULL DEFAULT 0;
+
+-- AlterTable
+ALTER TABLE `riders` MODIFY `run_lap` INTEGER NULL DEFAULT 0,
+    MODIFY `lap_no` INTEGER NULL DEFAULT 0,
+    MODIFY `run` BOOLEAN NULL DEFAULT false;
