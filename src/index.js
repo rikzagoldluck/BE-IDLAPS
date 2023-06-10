@@ -41,7 +41,7 @@ app.listen(PORT, () => {
 
 const mqtt = require("mqtt");
 const connectOptions = require("./config/mqtt_connection");
-const { createRiderFinish } = require("./controller/riders");
+const { createRiderFinish, createRiderTest } = require("./controller/riders");
 
 const clientId = "idlaps_nodejs_" + Math.random().toString(16).substring(2, 8);
 const options = {
@@ -89,7 +89,9 @@ client.on("message", (topic, payload) => {
   try {
     const idbeacon = payload.toString();
     const now = Date.now();
-    createRiderFinish(idbeacon, now);
+    // createRiderFinish(idbeacon, now);
+    console.log(topic);
+    createRiderTest();
   } catch (error) {
     console.log("Error:", error);
   }

@@ -214,7 +214,6 @@ const updateStartTime = async (req, res) => {
   const { id } = req.params;
   // unix timestamp now
   const now = Date.now().toString();
-  console.log(now);
   try {
     const category = await prisma.categories.updateMany({
       where: {
@@ -227,6 +226,35 @@ const updateStartTime = async (req, res) => {
       },
       data: {
         start_time: now,
+      },
+    });
+    res.json({
+      message: "UPDATE category success",
+      data: category,
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "Server Error",
+      message: error.message,
+    });
+  }
+};
+const updateEndTime = async (req, res) => {
+  const { id } = req.params;
+  // unix timestamp now
+  const now = Date.now().toString();
+  try {
+    const category = await prisma.categories.updateMany({
+      where: {
+        id: {
+          equals: Number(id),
+        },
+        end_time: {
+          equals: "0",
+        },
+      },
+      data: {
+        end_time: now,
       },
     });
     res.json({
@@ -271,5 +299,6 @@ module.exports = {
   updateRaceToday,
   updateRun,
   updateStartTime,
+  updateEndTime,
   deleteCategory,
 };

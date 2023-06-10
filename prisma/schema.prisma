@@ -22,8 +22,7 @@ model categories {
   run                Boolean?             @default(false)
   race_today         Boolean?             @default(false)
   event_id           Int?
-  events             events?              @relation(fields: [event_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "categories_ibfk_1")
-  event_participants event_participants[] @ignore
+  events             events?              @relation(fields: [event_id], references: [id], onDelete:Restrict, map: "categories_ibfk_1")
   race_results       race_results[]
   riders             riders[]
 
@@ -38,21 +37,6 @@ model teams {
   riders             riders[]
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
-model event_participants {
-  event_id          Int?
-  rider_id          Int?
-  category_id       Int?
-  registration_date Int?   
-  events            events?     @relation(fields: [event_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "event_participants_ibfk_1")
-  categories        categories? @relation(fields: [category_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "event_participants_ibfk_2")
-  riders            riders?     @relation(fields: [rider_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "event_participants_ibfk_3")
-
-  @@index([category_id], map: "category_id")
-  @@index([event_id], map: "event_id")
-  @@index([rider_id], map: "rider_id")
-  @@ignore
-}
 
 /// Satu event bisa memiliki banyak categor
 model events {
@@ -69,35 +53,21 @@ model events {
   type               String?              @db.VarChar(30)
   registration_fee   Int?
   categories         categories[]
-  event_participants event_participants[] @ignore
-  race_start         race_start[]
-  riders             riders[]
 }
 
 model race_results {
   result_id   Int         @id @default(autoincrement())
-  rider_id    Int?
-  category_id Int?
+  rider_id    Int
+  category_id Int
   lap_number  Int?        @default(0)
-  finish_time String        @default("0") @db.VarChar(100)
-  riders      riders?     @relation(fields: [rider_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "race_results_ibfk_2")
-  categories  categories? @relation(fields: [category_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "race_results_ibfk_3")
+  finish_time String      @default("0") @db.VarChar(100)
+  riders      riders?     @relation(fields: [rider_id], references: [id], map: "race_results_ibfk_2")
+  categories  categories? @relation(fields: [category_id], references: [id], map: "race_results_ibfk_3")
 
   @@index([category_id], map: "category_id")
   @@index([rider_id], map: "rider_id")
 }
 
-model race_start {
-  race_start_id Int       @id @default(autoincrement())
-  event_id      Int?
-  rider_id      Int?
-  start_time    Int?
-  events        events?   @relation(fields: [event_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "race_start_ibfk_1")
-  riders        riders?   @relation(fields: [rider_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "race_start_ibfk_2")
-
-  @@index([event_id], map: "event_id")
-  @@index([rider_id], map: "rider_id")
-}
 
 model riders {
   id                 Int                  @id @default(autoincrement())
@@ -113,17 +83,12 @@ model riders {
   note_1             String?              @db.VarChar(100)
   run                Boolean?             @default(false)
   total_waktu        String               @db.VarChar(100)    @default("0")
-  event_id           Int
   category_id        Int
-  event_participants event_participants[] @ignore
   race_results       race_results[]
-  race_start         race_start[]
-  categories         categories           @relation(fields: [category_id], references: [id], onUpdate: Restrict, map: "fk_category")
-  events             events               @relation(fields: [event_id], references: [id], onUpdate: Restrict, map: "fk_event")
-  teams              teams?               @relation(fields: [team_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "fk_team")
+  categories         categories           @relation(fields: [category_id], references: [id], map: "fk_category")
+  teams              teams?               @relation(fields: [team_id], references: [id], map: "fk_team")
 
   @@index([category_id], map: "fk_category")
-  @@index([event_id], map: "fk_event")
   @@index([team_id], map: "fk_team")
 
 }

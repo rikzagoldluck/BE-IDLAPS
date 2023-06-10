@@ -6,11 +6,6 @@ const getRiders = async (req, res) => {
   try {
     const response = await prisma.riders.findMany({
       include: {
-        events: {
-          select: {
-            name: true,
-          },
-        },
         teams: {
           select: {
             name: true,
@@ -19,6 +14,9 @@ const getRiders = async (req, res) => {
         categories: {
           select: {
             name: true,
+            // include: {
+            events: { select: { name: true } },
+            // },
           },
         },
       },
@@ -40,11 +38,17 @@ const getRidersRunInCategory = async (req, res) => {
         category_id: Number(id),
       },
       include: {
+        teams: {
+          select: {
+            name: true,
+          },
+        },
         race_results: true,
         categories: {
           select: {
             name: true,
             lap: true,
+            start_time: true,
           },
         },
       },
@@ -63,6 +67,17 @@ const getRidersRunInCategory = async (req, res) => {
       message: error.message,
     });
   }
+};
+
+const createRiderTest = async () => {
+  const now = Date.now().toString();
+  const race_result = await prisma.race_results.create({
+    data: {
+      rider_id: 1,
+      category_id: 2,
+      finish_time: now,
+    },
+  });
 };
 
 const createRiderFinish = async (idbeacon, now) => {
@@ -153,8 +168,7 @@ const createNewRider = async (req, res) => {
         ...body,
         age: Number(body.age),
         team_id: Number(body.team_id),
-        id_beacon: Number(body.id_b),
-        event_id: Number(body.event_id),
+        id_beacon: Number(body.id_beacon),
         category_id: Number(body.category_id),
       },
     });
@@ -234,6 +248,7 @@ module.exports = {
   getRidersRunInCategory,
   getRider,
   createNewRider,
+  createRiderTest,
   createRiderFinish,
   updateRider,
   deleteRider,
