@@ -13,6 +13,10 @@ router.get("/:idCategory", CategoriesController.getCategory);
 router.get("/events/:id", CategoriesController.getCategoriesByEvent);
 
 // UPDATE - PATCH
+router.patch(
+  "/parcel/:forWhat",
+  CategoriesController.updateCategoriesByEventId
+);
 router.patch("/:idCategory", CategoriesController.updateCategory);
 router.patch("/start_time/:id", CategoriesController.updateStartTime);
 router.patch("/end_time/:id", CategoriesController.updateEndTime);

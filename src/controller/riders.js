@@ -1,4 +1,5 @@
 const { PrismaClient } = require("@prisma/client");
+const { getUtility } = require("./utilities");
 
 const prisma = new PrismaClient();
 
@@ -53,12 +54,141 @@ const getRidersRunInCategory = async (req, res) => {
         },
       },
       orderBy: {
-        total_waktu: "asc",
+        race_results: {
+          _count: "desc",
+        },
+        // total_waktu: "asc",
+      },
+    });
+    // console.log(response);
+
+    res.json({
+      message: "GET all riders success",
+      data: response,
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "Server Error",
+      message: error.message,
+    });
+  }
+};
+
+const calculateMinuteGap = (timestamp1, timestamp2) => {
+  const minuteGap = Math.abs(timestamp2 - timestamp1) / (1000 * 60);
+  return minuteGap;
+};
+
+const record = async (mac) => {
+  try {
+    await prisma.$transaction(async (tx) => {
+      // GET RIDER RUN BY MAC ADDRESS
+      const riderRun = await prisma.riders.findMany({
+        where: {
+          AND: [
+            {
+              beacon: {
+                tag_id: mac,
+              },
+            },
+            { run: true },
+          ],
+        },
+        select: {
+          id: true,
+          category_id: true,
+          categories: {
+            select: {
+              run: true,
+              start_time: true,
+              start_sch: true,
+            },
+          },
+        },
+      });
+
+      if (riderRun.length < 1) {
+        throw new Error("Rider with MAC: " + mac + " not run");
+      }
+
+      const lastRecord = await prisma.race_results.findFirst({
+        select: {
+          finish_time: true,
+        },
+        where: {
+          rider_id: riderRun[0].id,
+          category_id: riderRun[0].category_id,
+        },
+        orderBy: {
+          result_id: "desc",
+        },
+        take: 1,
+      });
+
+      let lastRecordTime = parseInt(riderRun[0].categories.start_time);
+      if (lastRecord !== null) {
+        lastRecordTime = parseInt(lastRecord.finish_time);
+      }
+
+      const interval = await prisma.utilities.findFirst({
+        where: {
+          name: {
+            equals: "interval",
+          },
+        },
+        select: {
+          value: true,
+        },
+      });
+      const now = new Date().getTime();
+
+      if (calculateMinuteGap(lastRecordTime, now) < parseInt(interval.value)) {
+        throw new Error("Rider with MAC: " + mac + " has been recorded");
+      }
+
+      const race_result = await prisma.race_results.create({
+        data: {
+          rider_id: riderRun[0].id,
+          category_id: riderRun[0].category_id,
+          finish_time: now.toString(),
+        },
+      });
+
+      await prisma.riders.update({
+        where: {
+          id: riderRun[0].id,
+        },
+        data: {
+          total_waktu: now.toString(),
+        },
+      });
+
+      throw new Error(JSON.stringify(race_result));
+    });
+  } catch (error) {
+    prisma.$disconnect();
+    return error.message;
+  }
+};
+
+const getRidersByCategory = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const response = await prisma.riders.findMany({
+      where: {
+        category_id: Number(id),
+      },
+      include: {
+        teams: {
+          select: {
+            name: true,
+          },
+        },
       },
     });
 
     res.json({
-      message: "GET all riders success",
+      message: "GET all riders by categoriees success",
       data: response,
     });
   } catch (error) {
@@ -141,6 +271,18 @@ const getRider = async (req, res) => {
       where: {
         id: Number(idRider),
       },
+      include: {
+        categories: {
+          include: {
+            events: {
+              select: {
+                name: true,
+                id: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     res.json({
@@ -205,8 +347,7 @@ const updateRider = async (req, res) => {
         ...body,
         age: Number(body.age),
         team_id: Number(body.team_id),
-        id_beacon: Number(body.id_b),
-        event_id: Number(body.event_id),
+        id_beacon: Number(body.id_beacon),
         category_id: Number(body.category_id),
       },
     });
@@ -246,10 +387,12 @@ const deleteRider = async (req, res) => {
 module.exports = {
   getRiders,
   getRidersRunInCategory,
+  getRidersByCategory,
   getRider,
   createNewRider,
   createRiderTest,
   createRiderFinish,
   updateRider,
   deleteRider,
+  record,
 };

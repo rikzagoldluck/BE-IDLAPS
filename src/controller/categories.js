@@ -128,6 +128,82 @@ const createNewCategory = async (req, res) => {
   }
 };
 
+const updateCategoriesByEventId = async (req, res) => {
+  const { forWhat } = req.params;
+
+  let data = {},
+    dataForRider = {};
+  if (forWhat === "start") {
+    data = {
+      start_time: Date.now().toString(),
+      run: true,
+    };
+    dataForRider = {
+      run: true,
+    };
+  } else if (forWhat === "stop") {
+    data = {
+      end_time: Date.now().toString(),
+      run: false,
+    };
+    dataForRider = {
+      run: false,
+    };
+  } else if (forWhat === "clear") {
+    data = {
+      start_time: "0",
+      end_time: "0",
+      run: false,
+    };
+    dataForRider = {
+      run: false,
+      total_waktu: "0",
+    };
+  }
+  try {
+    await prisma.$transaction(async (tx) => {
+      const categoriesUpdated = await prisma.categories.updateMany({
+        where: {
+          event_id: Number(req.body.event_id),
+          id: {
+            in: req.body.categories,
+          },
+        },
+        data,
+      });
+
+      await prisma.riders.updateMany({
+        where: {
+          category_id: {
+            in: req.body.categories,
+          },
+        },
+        data: dataForRider,
+      });
+
+      if (forWhat === "clear") {
+        await prisma.race_results.deleteMany({
+          where: {
+            category_id: {
+              in: req.body.categories,
+            },
+          },
+        });
+      }
+
+      res.json({
+        message: "UPDATE category success",
+        data: categoriesUpdated,
+      });
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "Server Error",
+      message: error.message,
+    });
+  }
+};
+
 const updateCategory = async (req, res) => {
   const { idCategory } = req.params;
   const { body } = req;
@@ -300,5 +376,6 @@ module.exports = {
   updateRun,
   updateStartTime,
   updateEndTime,
+  updateCategoriesByEventId,
   deleteCategory,
 };

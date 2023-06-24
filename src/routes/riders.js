@@ -10,6 +10,7 @@ router.post("/", RidersController.createNewRider);
 // READ - GET
 router.get("/", RidersController.getRiders);
 router.get("/:idRider", RidersController.getRider);
+router.get("/category/:id", RidersController.getRidersByCategory);
 
 // UPDATE - PATCH
 router.patch("/:idRider", RidersController.updateRider);
