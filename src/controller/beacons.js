@@ -45,9 +45,7 @@ const getAvailableBeacons = async (req, res) => {
 
       const beaconUsed = await prisma.riders.findMany({
         where: {
-          categories: {
-            event_id: Number(id),
-          },
+          category_id: Number(id),
         },
         select: {
           id_beacon: true,
@@ -90,11 +88,7 @@ const getAvailableBeaconsAndChoosen = async (req, res) => {
     await prisma.$transaction(async (tx) => {
       const beaconUsed = await prisma.riders.findMany({
         where: {
-          categories: {
-            events: {
-              id: Number(id),
-            },
-          },
+          category_id: Number(id),
         },
         select: {
           id_beacon: true,

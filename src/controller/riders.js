@@ -53,20 +53,14 @@ const getRidersRunInCategory = async (req, res) => {
           },
         },
       },
-      orderBy: {
-        race_results: {
-          _count: "desc",
-        },
-        // total_waktu: "asc",
-      },
     });
-    // console.log(response);
 
     res.json({
       message: "GET all riders success",
       data: response,
     });
   } catch (error) {
+    console.log(error);
     res.status(500).json({
       status: "Server Error",
       message: error.message,
@@ -102,6 +96,7 @@ const record = async (mac) => {
               run: true,
               start_time: true,
               start_sch: true,
+              lap: true,
             },
           },
         },
@@ -154,14 +149,35 @@ const record = async (mac) => {
         },
       });
 
-      await prisma.riders.update({
+      // IF RACE RESULT LENGTH IS SAME AS LAP FROM CATEGORY THEN UPDATE RIDER RUN TO FALSE AND SET NOTE TO FINISHER
+      const lap_count = await prisma.race_results.count({
         where: {
-          id: riderRun[0].id,
-        },
-        data: {
-          total_waktu: now.toString(),
+          rider_id: riderRun[0].id,
+          category_id: riderRun[0].category_id,
         },
       });
+
+      if (lap_count === riderRun[0].categories.lap) {
+        await prisma.riders.update({
+          where: {
+            id: riderRun[0].id,
+          },
+          data: {
+            run: false,
+            note: "FINISHER",
+            total_waktu: now.toString(),
+          },
+        });
+      } else {
+        await prisma.riders.update({
+          where: {
+            id: riderRun[0].id,
+          },
+          data: {
+            total_waktu: now.toString(),
+          },
+        });
+      }
 
       throw new Error(JSON.stringify(race_result));
     });
@@ -362,6 +378,30 @@ const updateRider = async (req, res) => {
     });
   }
 };
+const updateRiderNote = async (req, res) => {
+  const { idRider, note } = req.params;
+
+  try {
+    const rider = await prisma.riders.update({
+      where: {
+        id: Number(idRider),
+      },
+      data: {
+        note,
+        run: false,
+      },
+    });
+    res.json({
+      message: "UPDATE rider note success",
+      data: rider,
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "Server Error",
+      message: error.message,
+    });
+  }
+};
 
 const deleteRider = async (req, res) => {
   const { idRider } = req.params;
@@ -393,6 +433,7 @@ module.exports = {
   createRiderTest,
   createRiderFinish,
   updateRider,
+  updateRiderNote,
   deleteRider,
   record,
 };

@@ -140,6 +140,7 @@ const updateCategoriesByEventId = async (req, res) => {
     };
     dataForRider = {
       run: true,
+      note: "RUN",
     };
   } else if (forWhat === "stop") {
     data = {
@@ -148,6 +149,7 @@ const updateCategoriesByEventId = async (req, res) => {
     };
     dataForRider = {
       run: false,
+      note: "DNS",
     };
   } else if (forWhat === "clear") {
     data = {
@@ -158,6 +160,7 @@ const updateCategoriesByEventId = async (req, res) => {
     dataForRider = {
       run: false,
       total_waktu: "0",
+      note: "DNS",
     };
   }
   try {

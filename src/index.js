@@ -51,7 +51,6 @@ const {
   getRiderRunByBeacon,
   record,
 } = require("./controller/riders");
-const { Prisma } = require("@prisma/client");
 
 const clientId = "idlaps_nodejs_" + Math.random().toString(16).substring(2, 8);
 const options = {
@@ -64,8 +63,6 @@ const options = {
 };
 
 const { PrismaClient } = require("@prisma/client");
-// const { getUtility } = require("./utilities");
-
 const prisma = new PrismaClient();
 
 const { protocol, host, port } = connectOptions;
@@ -76,7 +73,7 @@ if (["ws", "wss"].includes(protocol)) connectUrl += "/mqtt";
 const client = mqtt.connect(connectUrl, options);
 const qos = 0;
 
-const getBeacons = async (req, res) => {
+const getBeacons = async () => {
   try {
     const response = await prisma.beacon.findMany();
     return response;
@@ -120,52 +117,65 @@ client.on("error", (error) => {
 let lastData = {};
 let isFirstData = true;
 
-const p = async () => {
-  try {
-    const interval = await prisma.utilities.findFirst({
-      where: {
-        name: {
-          equals: "interval",
-        },
-      },
-      select: {
-        value: true,
-      },
-    });
-    console.log(interval.value);
-    return interval.value;
-  } catch (error) {
-    console.log(error);
-    return 0;
-  }
+const setIsFirstData = () => {
+  setTimeout(() => {
+    isFirstData = true;
+  }, 10);
 };
-
 client.on("message", (topic, payload) => {
   try {
     const { mac, y, time } = JSON.parse(payload.toString());
-
     // RECORD ONLY IF Y AND TIME IS DIFFERENT
+    if (y < 0) return;
+
     if (
       (lastData.mac !== mac || lastData.y !== y || lastData.time !== time) &&
       isFirstData
     ) {
       lastData = { mac, y, time };
-      // record(mac);
+      record(mac);
       isFirstData = false;
-      console.log("mac : " + mac + ", y : " + y + "");
+      setIsFirstData();
+    } else {
+      console.log("data sama");
     }
   } catch (error) {
     console.log("Error:", error);
   }
 });
 
-if (!isFirstData) {
-  console.log(p() * 1000 * 60);
-  setTimeout(() => {
-    isFirstData = true;
-    console.log("a");
-  }, p() * 1000 * 60);
-}
 // record("4C5BB3110C3B")
 //   .then((res) => console.log(res))
 //   .catch((err) => console.log(err));
+
+process.on("exit", () => {
+  client.end();
+  prisma.$disconnect();
+});
+
+const async = require("async");
+function processMessage(data, callback) {
+  async.waterfall(
+    [
+      // Perform any necessary data transformations or validations
+      (next) => {
+        // Example: Calculate average value from multiple data points
+        const averageValue = calculateAverage(data.mac);
+        next(null, averageValue);
+      },
+      // Save the processed data to the database
+      (averageValue, next) => {
+        record(averageValue)
+          .then(() => next(null))
+          .catch(next);
+      },
+    ],
+    callback
+  );
+}
+
+function calculateAverage(values) {
+  // Example: Calculate average value
+  const sum = values.reduce((acc, val) => acc + val, 0);
+  return sum / values.length;
+}
