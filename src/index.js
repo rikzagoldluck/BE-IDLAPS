@@ -120,13 +120,14 @@ let isFirstData = true;
 const setIsFirstData = () => {
   setTimeout(() => {
     isFirstData = true;
-  }, 10);
+  }, 100);
 };
 client.on("message", (topic, payload) => {
   try {
     const { mac, y, time } = JSON.parse(payload.toString());
     // RECORD ONLY IF Y AND TIME IS DIFFERENT
-    if (y < 0) return;
+    // console.dir(JSON.parse(payload.toString()), {depth: "Infinity"})
+    if (parseFloat(y) < 0.0 || parseFloat(y) > 1.0) return;
 
     if (
       (lastData.mac !== mac || lastData.y !== y || lastData.time !== time) &&
@@ -137,7 +138,7 @@ client.on("message", (topic, payload) => {
       isFirstData = false;
       setIsFirstData();
     } else {
-      console.log("data sama");
+      // console.log("data sama");
     }
   } catch (error) {
     console.log("Error:", error);
@@ -153,29 +154,3 @@ process.on("exit", () => {
   prisma.$disconnect();
 });
 
-const async = require("async");
-function processMessage(data, callback) {
-  async.waterfall(
-    [
-      // Perform any necessary data transformations or validations
-      (next) => {
-        // Example: Calculate average value from multiple data points
-        const averageValue = calculateAverage(data.mac);
-        next(null, averageValue);
-      },
-      // Save the processed data to the database
-      (averageValue, next) => {
-        record(averageValue)
-          .then(() => next(null))
-          .catch(next);
-      },
-    ],
-    callback
-  );
-}
-
-function calculateAverage(values) {
-  // Example: Calculate average value
-  const sum = values.reduce((acc, val) => acc + val, 0);
-  return sum / values.length;
-}
