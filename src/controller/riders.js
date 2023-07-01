@@ -76,7 +76,7 @@ const calculateMinuteGap = (timestamp1, timestamp2) => {
 const record = async (mac) => {
   try {
     await prisma.$transaction(async (tx) => {
-      // GET RIDER RUN BY MAC ADDRESS
+      // AMBIL SEMUA YANG RUNNING
       const riderRun = await prisma.riders.findMany({
         where: {
           AND: [
@@ -101,6 +101,8 @@ const record = async (mac) => {
           },
         },
       });
+
+      
 
       if (riderRun.length < 1) {
         throw new Error("Rider with MAC: " + mac + " not run");
@@ -157,7 +159,9 @@ const record = async (mac) => {
         },
       });
 
-      if (lap_count === riderRun[0].categories.lap) {
+      console.log("lap count: " + lap_count)
+      console.log("lap race: " + riderRun[0].categories.lap)
+      if (parseInt(lap_count) === parseInt(riderRun[0].categories.lap)) {
         await prisma.riders.update({
           where: {
             id: riderRun[0].id,
