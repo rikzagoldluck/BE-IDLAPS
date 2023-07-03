@@ -317,7 +317,7 @@ const getRider = async (req, res) => {
 const createNewRider = async (req, res) => {
   const { body } = req;
 
-  if (!body.name || !body.nationality || !body.mac_no) {
+  if (!body.name || !body.nationality ) {
     return res.status(400).json({
       message: "Anda mengirimkan data yang salah",
       data: null,
@@ -351,7 +351,7 @@ const updateRider = async (req, res) => {
   const { idRider } = req.params;
   const { body } = req;
 
-  if (!body.name || !body.nationality || !body.mac_no) {
+  if (!body.name || !body.nationality) {
     return res.status(400).json({
       message: "Anda mengirimkan data yang salah",
       data: null,
