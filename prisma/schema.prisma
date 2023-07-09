@@ -33,7 +33,7 @@ model teams {
   name        String?  @db.VarChar(100)
   province    String?  @db.VarChar(100)
   nationality String?  @db.VarChar(5)
-  riders      riders[]
+  /// riders      riders[]
 }
 
 /// Satu event bisa memiliki banyak categor
@@ -78,17 +78,17 @@ model riders {
   note_1       String?        @db.VarChar(100)
   run          Boolean?       @default(false)
   category_id  Int
-  team_id      Int
+  team_name    String?        @db.VarChar(100)
   total_waktu  String         @default("0") @db.VarChar(100)
   race_results race_results[]
   id_beacon    Int
   categories   categories     @relation(fields: [category_id], references: [id], map: "fk_category")
-  teams        teams          @relation(fields: [team_id], references: [id], map: "fk_team")
+  /// teams        teams          @relation(fields: [team_id], references: [id], map: "fk_team")
   beacon       beacon         @relation(fields: [id_beacon], references: [id], map: "riders_ibfk_1")
 
 
   @@index([category_id], map: "fk_category")
-  @@index([team_id], map: "fk_team")
+  /// @@index([team_id], map: "fk_team")/
   @@index([id_beacon], map: "id_beacon")
   
 }

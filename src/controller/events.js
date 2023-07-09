@@ -35,13 +35,7 @@ const getEvent = async (req, res) => {
 const createNewEvent = async (req, res) => {
   const { body } = req;
 
-  if (
-    !body.name ||
-    !body.location ||
-    !body.commisioner ||
-    !body.race_director ||
-    !body.type
-  ) {
+  if (!body.name || !body.location) {
     return res.status(400).json({
       message: "Anda mengirimkan data yang salah",
       data: null,
@@ -73,13 +67,7 @@ const updateEvent = async (req, res) => {
   const { idEvent } = req.params;
   const { body } = req;
 
-  if (
-    !body.name ||
-    !body.location ||
-    !body.commisioner ||
-    !body.race_director ||
-    !body.type
-  ) {
+  if (!body.name || !body.location) {
     return res.status(400).json({
       message: "Anda mengirimkan data yang salah",
       data: null,

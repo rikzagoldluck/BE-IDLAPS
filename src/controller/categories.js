@@ -99,7 +99,7 @@ const getCategory = async (req, res) => {
 const createNewCategory = async (req, res) => {
   const { body } = req;
 
-  if (!body.name || !body.description || !body.sex) {
+  if (!body.name || !body.sex) {
     return res.status(400).json({
       message: "Anda mengirimkan data yang salah",
       data: null,
@@ -211,7 +211,7 @@ const updateCategory = async (req, res) => {
   const { idCategory } = req.params;
   const { body } = req;
 
-  if (!body.name || !body.description || !body.sex) {
+  if (!body.name || !body.sex) {
     return res.status(400).json({
       message: "Anda mengirimkan data yang salah",
       data: null,

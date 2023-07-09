@@ -7,11 +7,6 @@ const getRiders = async (req, res) => {
   try {
     const response = await prisma.riders.findMany({
       include: {
-        teams: {
-          select: {
-            name: true,
-          },
-        },
         categories: {
           select: {
             name: true,
@@ -39,11 +34,6 @@ const getRidersRunInCategory = async (req, res) => {
         category_id: Number(id),
       },
       include: {
-        teams: {
-          select: {
-            name: true,
-          },
-        },
         race_results: true,
         categories: {
           select: {
@@ -102,8 +92,6 @@ const record = async (mac) => {
         },
       });
 
-      
-
       if (riderRun.length < 1) {
         throw new Error("Rider with MAC: " + mac + " not run");
       }
@@ -159,8 +147,8 @@ const record = async (mac) => {
         },
       });
 
-      console.log("lap count: " + lap_count)
-      console.log("lap race: " + riderRun[0].categories.lap)
+      console.log("lap count: " + lap_count);
+      console.log("lap race: " + riderRun[0].categories.lap);
       if (parseInt(lap_count) === parseInt(riderRun[0].categories.lap)) {
         await prisma.riders.update({
           where: {
@@ -197,13 +185,6 @@ const getRidersByCategory = async (req, res) => {
     const response = await prisma.riders.findMany({
       where: {
         category_id: Number(id),
-      },
-      include: {
-        teams: {
-          select: {
-            name: true,
-          },
-        },
       },
     });
 
@@ -317,7 +298,7 @@ const getRider = async (req, res) => {
 const createNewRider = async (req, res) => {
   const { body } = req;
 
-  if (!body.name || !body.nationality ) {
+  if (!body.name || !body.team_name) {
     return res.status(400).json({
       message: "Anda mengirimkan data yang salah",
       data: null,
@@ -329,7 +310,6 @@ const createNewRider = async (req, res) => {
       data: {
         ...body,
         age: Number(body.age),
-        team_id: Number(body.team_id),
         id_beacon: Number(body.id_beacon),
         category_id: Number(body.category_id),
       },
@@ -351,7 +331,7 @@ const updateRider = async (req, res) => {
   const { idRider } = req.params;
   const { body } = req;
 
-  if (!body.name || !body.nationality) {
+  if (!body.name || !body.team_name) {
     return res.status(400).json({
       message: "Anda mengirimkan data yang salah",
       data: null,
@@ -366,7 +346,6 @@ const updateRider = async (req, res) => {
       data: {
         ...body,
         age: Number(body.age),
-        team_id: Number(body.team_id),
         id_beacon: Number(body.id_beacon),
         category_id: Number(body.category_id),
       },
@@ -392,7 +371,7 @@ const updateRiderNote = async (req, res) => {
       },
       data: {
         note,
-        run: false,
+        run: note !== "RUN" ? false : true,
       },
     });
     res.json({
