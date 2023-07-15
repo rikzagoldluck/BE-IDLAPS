@@ -47,7 +47,12 @@ const getCategoriesRace = async (req, res) => {
   try {
     const response = await prisma.categories.findMany({
       where: {
-        race_today: true,
+        start_sch: {
+          lte: new Date().getTime().toString(),
+          gte: new Date(new Date().setDate(new Date().getDate() - 1))
+            .getTime()
+            .toString(),
+        },
       },
       include: {
         events: {
@@ -140,7 +145,6 @@ const updateCategoriesByEventId = async (req, res) => {
     };
     dataForRider = {
       run: true,
-      note: "RUN",
     };
   } else if (forWhat === "stop") {
     data = {
@@ -149,7 +153,6 @@ const updateCategoriesByEventId = async (req, res) => {
     };
     dataForRider = {
       run: false,
-      note: "DNS",
     };
   } else if (forWhat === "clear") {
     data = {
@@ -160,7 +163,6 @@ const updateCategoriesByEventId = async (req, res) => {
     dataForRider = {
       run: false,
       total_waktu: "0",
-      note: "DNS",
     };
   }
   try {

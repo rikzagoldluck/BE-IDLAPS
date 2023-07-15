@@ -373,7 +373,7 @@ const updateRiderNote = async (req, res) => {
       },
       data: {
         note,
-        run: note !== "RUN" ? false : true,
+        run: note !== "RUN" || note !== "" ? false : true,
       },
     });
     res.json({
@@ -388,6 +388,34 @@ const updateRiderNote = async (req, res) => {
   }
 };
 
+const updateRidersNote = async (req, res) => {
+  const { note } = req.params;
+  console.log(note);
+
+  try {
+    const rider = await prisma.riders.updateMany({
+      where: {
+        id: {
+          in: req.body.riders_id,
+        },
+      },
+      data: {
+        note,
+        run: note == "RUN" || note == "" ? true : false,
+      },
+    });
+
+    res.json({
+      message: "UPDATE riders note success",
+      data: rider,
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "Server Error",
+      message: error.message,
+    });
+  }
+};
 const deleteRider = async (req, res) => {
   const { idRider } = req.params;
   try {
@@ -419,6 +447,7 @@ module.exports = {
   createRiderFinish,
   updateRider,
   updateRiderNote,
+  updateRidersNote,
   deleteRider,
   record,
 };

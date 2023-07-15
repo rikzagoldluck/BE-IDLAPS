@@ -15,6 +15,7 @@ router.get("/category/:id", RidersController.getRidersByCategory);
 // UPDATE - PATCH
 router.patch("/:idRider", RidersController.updateRider);
 router.patch("/:idRider/note/:note", RidersController.updateRiderNote);
+router.patch("/parcel/:note", RidersController.updateRidersNote);
 
 // DELETE - DELETE
 router.delete("/:idRider", RidersController.deleteRider);
