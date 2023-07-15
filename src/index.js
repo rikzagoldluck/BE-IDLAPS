@@ -125,6 +125,7 @@ const setIsFirstData = () => {
 client.on("message", (topic, payload) => {
   try {
     const { mac, y, time } = JSON.parse(payload.toString());
+    // console.log(mac)
     // RECORD ONLY IF Y AND TIME IS DIFFERENT
     // console.dir(JSON.parse(payload.toString()), {depth: "Infinity"})
     if (parseFloat(y) < 0.0 || parseFloat(y) > 1.0) return;

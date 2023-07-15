@@ -149,13 +149,8 @@ const record = async (mac) => {
         },
       });
 
-<<<<<<< HEAD
       console.log("lap count: " + lap_count)
       console.log("lap race: " + riderRun[0].categories.lap)
-=======
-      console.log("lap count: " + lap_count);
-      console.log("lap race: " + riderRun[0].categories.lap);
->>>>>>> 0e6d746d2c61019edcc4441a4a15b86b414e06b3
       if (parseInt(lap_count) === parseInt(riderRun[0].categories.lap)) {
         await prisma.riders.update({
           where: {
