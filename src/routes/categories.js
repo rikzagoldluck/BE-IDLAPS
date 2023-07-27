@@ -10,7 +10,7 @@ router.post("/", CategoriesController.createNewCategory);
 // READ - GET
 router.get("/", CategoriesController.getAllCategories);
 router.get("/:idCategory", CategoriesController.getCategory);
-router.get("/events/:id", CategoriesController.getCategoriesByEvent);
+router.get("/events/:id", CategoriesController.getCategoriesAndRidersByEvent);
 
 // UPDATE - PATCH
 router.patch(
