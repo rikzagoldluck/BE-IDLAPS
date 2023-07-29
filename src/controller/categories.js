@@ -33,6 +33,7 @@ const getCategoriesByEvent = async (req, res) => {
         event_id: Number(id),
       },
     });
+    return data;
 
     res.json({
       message: "GET categories success",
@@ -40,6 +41,44 @@ const getCategoriesByEvent = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ status: "Server Error", message: error.message });
+    // console.error("Error:", error.message);
+  } finally {
+    await prisma.$disconnect();
+  }
+};
+
+const getCategoriesAndRidersByEvent = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const event = await prisma.events.findUnique({
+      where: { id: Number(id) },
+      include: {
+        categories: {
+          include: {
+            riders: true,
+          },
+        },
+      },
+    });
+
+    if (!event) {
+      throw new Error("Event not found");
+    }
+
+    // Calculate the number of riders in each category
+    const categoriesWithRiderCount = event.categories.map((category) => ({
+      ...category,
+      riderCount: category.riders.length,
+    }));
+    res.json({
+      message: "GET categories success",
+      data: categoriesWithRiderCount,
+    });
+  } catch (error) {
+    res.status(500).json({ status: "Server Error", message: error.message });
+    // console.error("Error:", error.message);
+  } finally {
+    await prisma.$disconnect();
   }
 };
 
@@ -58,6 +97,11 @@ const getCategoriesRace = async (req, res) => {
         events: {
           select: {
             name: true,
+          },
+        },
+        _count: {
+          select: {
+            riders: true,
           },
         },
       },
@@ -144,14 +188,11 @@ const updateCategoriesByEventId = async (req, res) => {
       run: true,
     };
     dataForRider = {
-      run: true,
+      run: "RUN",
     };
   } else if (forWhat === "stop") {
     data = {
       end_time: Date.now().toString(),
-      run: false,
-    };
-    dataForRider = {
       run: false,
     };
   } else if (forWhat === "clear") {
@@ -161,7 +202,7 @@ const updateCategoriesByEventId = async (req, res) => {
       run: false,
     };
     dataForRider = {
-      run: false,
+      run: "STOP",
       total_waktu: "0",
     };
   }
@@ -185,6 +226,29 @@ const updateCategoriesByEventId = async (req, res) => {
         },
         data: dataForRider,
       });
+
+      if (forWhat === "stop") {
+        await prisma.riders.updateMany({
+          where: {
+            category_id: {
+              in: req.body.categories,
+            },
+            run: "RUN",
+          },
+          data: {
+            run: "DNF",
+          },
+        });
+      } else {
+        await prisma.riders.updateMany({
+          where: {
+            category_id: {
+              in: req.body.categories,
+            },
+          },
+          data: dataForRider,
+        });
+      }
 
       if (forWhat === "clear") {
         await prisma.race_results.deleteMany({
@@ -374,6 +438,7 @@ module.exports = {
   getAllCategories,
   getCategoriesRace,
   getCategoriesByEvent,
+  getCategoriesAndRidersByEvent,
   getCategory,
   createNewCategory,
   updateCategory,

@@ -8,32 +8,32 @@ datasource db {
 }
 
 model categories {
-  id           Int            @id @default(autoincrement())
-  name         String?        @db.VarChar(100)
-  description  String?        @db.VarChar(100)
-  start_time   String         @default("0") @db.VarChar(100)
-  end_time     String         @default("0") @db.VarChar(100)
-  sex          String?        @db.VarChar(100)
-  distance     Int?
-  lap          Int?
-  run          Boolean?       @default(false)
-  event_id     Int?
-  end_sch      String         @default("0") @db.VarChar(100)
-  race_today   Boolean?       @default(false)
-  start_sch    String         @default("0") @db.VarChar(100)
-  events       events?        @relation(fields: [event_id], references: [id], onDelete: Restrict, map: "categories_ibfk_1")
-  race_results race_results[]
-  riders       riders[]
+  id                Int            @id @default(autoincrement())
+  name              String?        @db.VarChar(100)
+  description       String?        @db.VarChar(100)
+  start_time        String         @default("0") @db.VarChar(100)
+  end_time          String         @default("0") @db.VarChar(100)
+  sex               String?        @db.VarChar(100)
+  distance          Int?
+  lap               Int?
+  run               Boolean?       @default(false)
+  event_id          Int?
+  end_sch           String         @default("0") @db.VarChar(100)
+  race_today        Boolean?       @default(false)
+  start_sch         String         @default("0") @db.VarChar(100)
+  independent_start Boolean        @default(false)
+  events            events?        @relation(fields: [event_id], references: [id], onDelete: Restrict, map: "categories_ibfk_1")
+  race_results      race_results[]
+  riders            riders[]
 
   @@index([event_id], map: "event_id")
 }
 
 model teams {
-  id          Int      @id @default(autoincrement())
-  name        String?  @db.VarChar(100)
-  province    String?  @db.VarChar(100)
-  nationality String?  @db.VarChar(5)
-  /// riders      riders[]
+  id          Int     @id @default(autoincrement())
+  name        String? @db.VarChar(100)
+  province    String? @db.VarChar(100)
+  nationality String? @db.VarChar(5)
 }
 
 /// Satu event bisa memiliki banyak categor
@@ -76,21 +76,17 @@ model riders {
   mac_no       String?        @db.VarChar(20)
   note         String?        @db.VarChar(20)
   note_1       String?        @db.VarChar(100)
-  run          Boolean?       @default(false)
+  run          riders_run?    @default(STOP)
   category_id  Int
-  team_name    String?        @db.VarChar(100)
   total_waktu  String         @default("0") @db.VarChar(100)
-  race_results race_results[]
   id_beacon    Int
+  team_name    String?        @db.VarChar(100)
+  race_results race_results[]
   categories   categories     @relation(fields: [category_id], references: [id], map: "fk_category")
-  /// teams        teams          @relation(fields: [team_id], references: [id], map: "fk_team")
   beacon       beacon         @relation(fields: [id_beacon], references: [id], map: "riders_ibfk_1")
 
-
   @@index([category_id], map: "fk_category")
-  /// @@index([team_id], map: "fk_team")/
   @@index([id_beacon], map: "id_beacon")
-  
 }
 
 model beacon {
@@ -100,7 +96,16 @@ model beacon {
 }
 
 model utilities {
-  id          Int      @id @default(autoincrement())
-  name        String?  @db.VarChar(100)
-  value       String?  @db.VarChar(100)
+  id    Int     @id @default(autoincrement())
+  name  String? @db.VarChar(100)
+  value String? @db.VarChar(100)
+}
+
+enum riders_run {
+  STOP
+  RUN
+  FINISHER
+  DNF
+  DNS
+  DSQ
 }

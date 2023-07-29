@@ -120,7 +120,7 @@ let isFirstData = true;
 const setIsFirstData = () => {
   setTimeout(() => {
     isFirstData = true;
-  }, 100);
+  }, 500);
 };
 client.on("message", (topic, payload) => {
   try {
@@ -154,4 +154,3 @@ process.on("exit", () => {
   client.end();
   prisma.$disconnect();
 });
-

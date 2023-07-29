@@ -75,7 +75,7 @@ const record = async (mac) => {
                 tag_id: mac,
               },
             },
-            { run: true },
+            { run: "RUN" },
           ],
         },
         select: {
@@ -157,8 +157,7 @@ const record = async (mac) => {
             id: riderRun[0].id,
           },
           data: {
-            run: false,
-            note: "FINISHER",
+            run: "FINISHER",
             total_waktu: now.toString(),
           },
         });
@@ -373,9 +372,35 @@ const updateRiderNote = async (req, res) => {
       },
       data: {
         note,
-        run: note !== "RUN" || note !== "" ? false : true,
+        run: note,
       },
     });
+
+    // GET START TIME BY CATEGORY
+    const category = await prisma.categories.findUnique({
+      where: {
+        id: rider.category_id,
+      },
+      select: {
+        start_time: true,
+      },
+    });
+    // IF CATEGORY START TIME IS 0 THEN UPDATE CATEGORY START TIME
+    if (
+      (category.start_time === "0" || category.start_time === null) &&
+      note === "RUN"
+    ) {
+      await prisma.categories.update({
+        where: {
+          id: rider.category_id,
+        },
+        data: {
+          run: true,
+          start_time: Date.now().toString(),
+        },
+      });
+    }
+
     res.json({
       message: "UPDATE rider note success",
       data: rider,
@@ -390,8 +415,6 @@ const updateRiderNote = async (req, res) => {
 
 const updateRidersNote = async (req, res) => {
   const { note } = req.params;
-  console.log(note);
-
   try {
     const rider = await prisma.riders.updateMany({
       where: {
@@ -401,7 +424,7 @@ const updateRidersNote = async (req, res) => {
       },
       data: {
         note,
-        run: note == "RUN" || note == "" ? true : false,
+        run: note,
       },
     });
 
