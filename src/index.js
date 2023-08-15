@@ -84,21 +84,27 @@ const getBeacons = async () => {
 
 client.on("connect", () => {
   console.log(`${protocol}: Connected`);
-  client.subscribe("silabs/aoa/position/multilocator-timing/ble-pd-#", {
+  client.subscribe("silabs/aoa/angle/ble-pd-4C5BB3112B88/ble-pd-#", {
+    //client.subscribe("silabs/aoa/position/multilocator-test_room/ble-pd-#", {
     qos,
   });
   getBeacons().then((res) => {
     res.forEach((beacon) => {
       client.subscribe(
-        `silabs/aoa/position/multilocator-timing/ble-pd-${beacon.tag_id}`,
+        `silabs/aoa/angle/ble-pd-4C5BB3112B88/ble-pd-${beacon.tag_id}`,
+        //`silabs/aoa/position/multilocator-test_room/ble-pd-${beacon.tag_id}`,
         { qos },
         (error) => {
           if (error) {
             console.log("subscribe error:", error);
             return;
           }
+          // untuk ANGLE
           console.log(
-            `${protocol}: Subscribe to topic 'silabs/aoa/position/multilocator-timing/ble-pd-${beacon.tag_id}'`
+            `${protocol}: Subscribe to topic 'silabs/aoa/angle/ble-pd-4C5BB3112B88/ble-pd-${beacon.tag_id}'`
+          // Untuk POSITION xyz
+          //console.log(
+          //  `${protocol}: Subscribe to topic 'silabs/aoa/position/multilocator-test_room/ble-pd-${beacon.tag_id}'`
           );
         }
       );
@@ -120,21 +126,26 @@ let isFirstData = true;
 const setIsFirstData = () => {
   setTimeout(() => {
     isFirstData = true;
-  }, 500);
+  }, 100);
 };
 client.on("message", (topic, payload) => {
   try {
-    const { mac, y, time } = JSON.parse(payload.toString());
-    // console.log(mac)
+    
+    const { mac = topic.toString().slice(-12), elevation, azimuth, time = Date.now().toString() } = JSON.parse(payload.toString());
+    //const { mac, y, x, time } = JSON.parse(payload.toString());
+    //console.log(Date.now().toString())
+    console.log(mac , "  ", elevation , "  ", time)
     // RECORD ONLY IF Y AND TIME IS DIFFERENT
     // console.dir(JSON.parse(payload.toString()), {depth: "Infinity"})
-    if (parseFloat(y) < 0.0 || parseFloat(y) > 1.0) return;
+    if (parseFloat(elevation) < 70.0 || parseFloat(elevation) > 85.0) return;
+    //if (parseFloat(x) < 0.0 || parseFloat(x) > 3.0) return;
 
     if (
-      (lastData.mac !== mac || lastData.y !== y || lastData.time !== time) &&
+      (lastData.mac !== mac || lastData.elevation !== elevation || lastData.time !== time) &&
       isFirstData
     ) {
-      lastData = { mac, y, time };
+      lastData = { mac, elevation, time };
+      //lastData = { mac, y, x, time };
       record(mac);
       isFirstData = false;
       setIsFirstData();
@@ -154,3 +165,4 @@ process.on("exit", () => {
   client.end();
   prisma.$disconnect();
 });
+
