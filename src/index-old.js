@@ -28,9 +28,9 @@ app.use("/races", racesRoutes);
 app.use("/beacons", beaconsRoutes);
 app.use("/utilities", utilitiesRoutes);
 // app.post("/upload", upload.single("photo"), (req, res) => {
-//   res.json({
-//     message: "Upload berhasil",
-//   });
+//   res.json({
+//     message: "Upload berhasil",
+//   });
 // });
 
 app.use((err, req, res, next) => {
@@ -56,7 +56,9 @@ const clientId = "idlaps_nodejs_" + Math.random().toString(16).substring(2, 8);
 const options = {
   clientId,
   clean: true,
-  connectTimeout: 4000, // username: "rikza", // password: "@Rikza09",
+  connectTimeout: 4000,
+  // username: "rikza",
+  // password: "@Rikza09",
   reconnectPeriod: 1000,
 };
 
@@ -82,22 +84,21 @@ const getBeacons = async () => {
 
 client.on("connect", () => {
   console.log(`${protocol}: Connected`);
-  client.subscribe("silabs/aoa/angle/ble-pd-4C5BB3112B88/ble-pd-#", {
-    //client.subscribe("silabs/aoa/position/multilocator-test_room/ble-pd-#", {
+  client.subscribe("silabs/aoa/position/multilocator-timing/ble-pd-#", {
     qos,
   });
   getBeacons().then((res) => {
     res.forEach((beacon) => {
       client.subscribe(
-        `silabs/aoa/angle/ble-pd-4C5BB3112B88/ble-pd-${beacon.tag_id}`, //`silabs/aoa/position/multilocator-test_room/ble-pd-${beacon.tag_id}`,
+        `silabs/aoa/position/multilocator-timing/ble-pd-${beacon.tag_id}`,
         { qos },
         (error) => {
           if (error) {
             console.log("subscribe error:", error);
             return;
-          } // untuk ANGLE
+          }
           console.log(
-            `${protocol}: Subscribe to topic 'silabs/aoa/angle/ble-pd-4C5BB3112B88/ble-pd-${beacon.tag_id}'` // Untuk POSITION xyz //console.log( //  `${protocol}: Subscribe to topic 'silabs/aoa/position/multilocator-test_room/ble-pd-${beacon.tag_id}'`
+            `${protocol}: Subscribe to topic 'silabs/aoa/position/multilocator-timing/ble-pd-${beacon.tag_id}'`
           );
         }
       );
@@ -119,29 +120,21 @@ let isFirstData = true;
 const setIsFirstData = () => {
   setTimeout(() => {
     isFirstData = true;
-  }, 100);
+  }, 500);
 };
 client.on("message", (topic, payload) => {
   try {
-    const {
-      mac = topic.toString().slice(-12),
-      elevation,
-      azimuth,
-      time = Date.now().toString(),
-    } = JSON.parse(payload.toString()); //const { mac, y, x, time } = JSON.parse(payload.toString()); //console.log(Date.now().toString())
-    console.log(mac, "  ", elevation, "  ", time); // RECORD ONLY IF Y AND TIME IS DIFFERENT // console.dir(JSON.parse(payload.toString()), {depth: "Infinity"})
-    if (parseFloat(elevation) < 75.0 || parseFloat(elevation) > 85.0) return; //if (parseFloat(x) < 0.0 || parseFloat(x) > 3.0) return;
+    const { mac, y, time } = JSON.parse(payload.toString());
+    // RECORD ONLY IF Y AND TIME IS DIFFERENT
+    // console.dir(JSON.parse(payload.toString()), {depth: "Infinity"})
+    if (parseFloat(y) < 0.0 || parseFloat(y) > 1.0) return;
+
     if (
-      (lastData.mac !== mac ||
-        lastData.elevation !== elevation ||
-        lastData.time !== time) &&
+      (lastData.mac !== mac || lastData.y !== y || lastData.time !== time) &&
       isFirstData
     ) {
-      lastData = { mac, elevation, time }; //lastData = { mac, y, x, time };
+      lastData = { mac, y, time };
       record(mac);
-      console.log(
-        "pastikan kode ini hanya jalan 1 kali ketika record, jika tidak silakan naikan delay setTimout di atas"
-      );
       isFirstData = false;
       setIsFirstData();
     } else {
@@ -153,11 +146,10 @@ client.on("message", (topic, payload) => {
 });
 
 // record("4C5BB3110C3B")
-//   .then((res) => console.log(res))
-//   .catch((err) => console.log(err));
+//   .then((res) => console.log(res))
+//   .catch((err) => console.log(err));
 
 process.on("exit", () => {
   client.end();
   prisma.$disconnect();
 });
-

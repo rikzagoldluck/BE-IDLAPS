@@ -66,7 +66,7 @@ const calculateMinuteGap = (timestamp1, timestamp2) => {
 const record = async (mac) => {
   try {
     await prisma.$transaction(async (tx) => {
-      // AMBIL SEMUA YANG RUNNING
+      // AMBIL RIDER YANG RUNNING DAN MAC ID NYA SAMA DENGAN YANG DIKIRIM
       const riderRun = await prisma.riders.findMany({
         where: {
           AND: [
@@ -98,6 +98,7 @@ const record = async (mac) => {
         throw new Error("Rider with MAC: " + mac + " not run");
       }
 
+      // CARI RECORD TERAKHIR DARI RIDER YANG SAMA
       const lastRecord = await prisma.race_results.findFirst({
         select: {
           finish_time: true,
@@ -383,12 +384,14 @@ const updateRiderNote = async (req, res) => {
       },
       select: {
         start_time: true,
+        independent_start: true,
       },
     });
     // IF CATEGORY START TIME IS 0 THEN UPDATE CATEGORY START TIME
     if (
       (category.start_time === "0" || category.start_time === null) &&
-      note === "RUN"
+      note === "RUN" &&
+      category.independent_start === true
     ) {
       await prisma.categories.update({
         where: {
@@ -428,6 +431,42 @@ const updateRidersNote = async (req, res) => {
       },
     });
 
+    // GET category id by rider id
+    const catId = await prisma.riders.findUnique({
+      select: {
+        category_id: true,
+      },
+      where: {
+        id: req.body.riders_id[0],
+      },
+    });
+
+    const category = await prisma.categories.findUnique({
+      where: {
+        id: catId.category_id,
+      },
+      select: {
+        start_time: true,
+        independent_start: true,
+      },
+    });
+    // IF CATEGORY START TIME IS 0 THEN UPDATE CATEGORY START TIME
+    if (
+      (category.start_time === "0" || category.start_time === null) &&
+      note === "RUN" &&
+      category.independent_start === true
+    ) {
+      await prisma.categories.update({
+        where: {
+          id: catId.category_id,
+        },
+        data: {
+          run: true,
+          start_time: Date.now().toString(),
+        },
+      });
+    }
+
     res.json({
       message: "UPDATE riders note success",
       data: rider,
@@ -460,6 +499,42 @@ const deleteRider = async (req, res) => {
   }
 };
 
+const updateClears = async (req, res) => {
+  try {
+    await prisma.$transaction(async (tx) => {
+      const rider = await prisma.riders.updateMany({
+        where: {
+          id: {
+            in: req.body.riders,
+          },
+        },
+        data: {
+          run: "STOP",
+          total_waktu: "0",
+        },
+      });
+
+      await prisma.race_results.deleteMany({
+        where: {
+          rider_id: {
+            in: req.body.riders,
+          },
+        },
+      });
+
+      res.json({
+        message: "Clear rider success",
+        data: rider,
+      });
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "Server Error",
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   getRiders,
   getRidersRunInCategory,
@@ -471,6 +546,7 @@ module.exports = {
   updateRider,
   updateRiderNote,
   updateRidersNote,
+  updateClears,
   deleteRider,
   record,
 };
