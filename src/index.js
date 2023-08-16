@@ -82,14 +82,14 @@ const getBeacons = async () => {
 
 client.on("connect", () => {
   console.log(`${protocol}: Connected`);
-  client.subscribe("silabs/aoa/angle/ble-pd-4C5BB3112B88/ble-pd-#", {
+  client.subscribe("silabs/aoa/angle/ble-pd-4C5BB3112B87/ble-pd-#", {
     //client.subscribe("silabs/aoa/position/multilocator-test_room/ble-pd-#", {
     qos,
   });
   getBeacons().then((res) => {
     res.forEach((beacon) => {
       client.subscribe(
-        `silabs/aoa/angle/ble-pd-4C5BB3112B88/ble-pd-${beacon.tag_id}`, //`silabs/aoa/position/multilocator-test_room/ble-pd-${beacon.tag_id}`,
+        `silabs/aoa/angle/ble-pd-4C5BB3112B87/ble-pd-${beacon.tag_id}`, //`silabs/aoa/position/multilocator-test_room/ble-pd-${beacon.tag_id}`,
         { qos },
         (error) => {
           if (error) {
@@ -97,7 +97,7 @@ client.on("connect", () => {
             return;
           } // untuk ANGLE
           console.log(
-            `${protocol}: Subscribe to topic 'silabs/aoa/angle/ble-pd-4C5BB3112B88/ble-pd-${beacon.tag_id}'` // Untuk POSITION xyz //console.log( //  `${protocol}: Subscribe to topic 'silabs/aoa/position/multilocator-test_room/ble-pd-${beacon.tag_id}'`
+            `${protocol}: Subscribe to topic 'silabs/aoa/angle/ble-pd-4C5BB3112B87/ble-pd-${beacon.tag_id}'` // Untuk POSITION xyz //console.log( //  `${protocol}: Subscribe to topic 'silabs/aoa/position/multilocator-test_room/ble-pd-${beacon.tag_id}'`
           );
         }
       );
