@@ -78,9 +78,11 @@ model riders {
   note_1       String?        @db.VarChar(100)
   run          riders_run?    @default(STOP)
   category_id  Int
+  start_waktu  String         @default("0") @db.VarChar(100)
   total_waktu  String         @default("0") @db.VarChar(100)
   id_beacon    Int
   team_name    String?        @db.VarChar(100)
+  lap_count    Int            @default(0)
   race_results race_results[]
   categories   categories     @relation(fields: [category_id], references: [id], map: "fk_category")
   beacon       beacon         @relation(fields: [id_beacon], references: [id], map: "riders_ibfk_1")
