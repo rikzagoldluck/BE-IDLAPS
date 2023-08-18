@@ -130,7 +130,7 @@ client.on("message", (topic, payload) => {
       time = Date.now().toString(),
     } = JSON.parse(payload.toString()); //const { mac, y, x, time } = JSON.parse(payload.toString()); //console.log(Date.now().toString())
     console.log(mac, "  ", elevation, "  ", time); // RECORD ONLY IF Y AND TIME IS DIFFERENT // console.dir(JSON.parse(payload.toString()), {depth: "Infinity"})
-    if (parseFloat(elevation) < 70.0 || parseFloat(elevation) > 85.0) return; //if (parseFloat(x) < 0.0 || parseFloat(x) > 3.0) return;
+    if (parseFloat(elevation) < 75.0 || parseFloat(elevation) > 90.0) return; //if (parseFloat(x) < 0.0 || parseFloat(x) > 3.0) return;
     if (
       (lastData.mac !== mac ||
         lastData.elevation !== elevation ||
