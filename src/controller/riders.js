@@ -40,6 +40,7 @@ const getRidersRunInCategory = async (req, res) => {
             name: true,
             lap: true,
             start_time: true,
+            independent_start: true,
           },
         },
       },
@@ -158,6 +159,7 @@ const record = async (mac) => {
             id: riderRun[0].id,
           },
           data: {
+            lap_count,
             run: "FINISHER",
             total_waktu: now.toString(),
           },
@@ -168,6 +170,7 @@ const record = async (mac) => {
             id: riderRun[0].id,
           },
           data: {
+            lap_count,
             total_waktu: now.toString(),
           },
         });
@@ -402,6 +405,15 @@ const updateRiderNote = async (req, res) => {
           start_time: Date.now().toString(),
         },
       });
+
+      await prisma.riders.update({
+        where: {
+          id: Number(idRider),
+        },
+        data: {
+          start_waktu: Date.now().toString(),
+        },
+      });
     }
 
     res.json({
@@ -465,6 +477,17 @@ const updateRidersNote = async (req, res) => {
           start_time: Date.now().toString(),
         },
       });
+
+      await prisma.riders.updateMany({
+        where: {
+          id: {
+            in: req.body.riders_id,
+          },
+        },
+        data: {
+          start_waktu: Date.now().toString(),
+        },
+      });
     }
 
     res.json({
@@ -510,6 +533,7 @@ const updateClears = async (req, res) => {
         },
         data: {
           run: "STOP",
+          start_waktu: "0",
           total_waktu: "0",
         },
       });

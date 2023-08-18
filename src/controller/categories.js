@@ -204,6 +204,7 @@ const updateCategoriesByEventId = async (req, res) => {
     dataForRider = {
       run: "STOP",
       total_waktu: "0",
+      start_waktu: "0",
     };
   }
   try {
