@@ -44,6 +44,9 @@ const getRidersRunInCategory = async (req, res) => {
           },
         },
       },
+      orderBy: {
+        bib: 'asc'
+      }
     });
 
     res.json({
@@ -82,12 +85,14 @@ const record = async (mac) => {
         select: {
           id: true,
           category_id: true,
+          start_waktu: true,
           categories: {
             select: {
               run: true,
               start_time: true,
               start_sch: true,
               lap: true,
+              independent_start : true,
             },
           },
         },
@@ -114,7 +119,13 @@ const record = async (mac) => {
         take: 1,
       });
 
-      let lastRecordTime = parseInt(riderRun[0].categories.start_time);
+      // 
+      let lastRecordTime = 0;
+      if (riderRun[0].categories.independent_start){
+        lastRecordTime = parseInt(riderRun[0].start_waktu);
+      }else {
+        lastRecordTime = parseInt(riderRun[0].categories.start_time);
+      }
       if (lastRecord !== null) {
         lastRecordTime = parseInt(lastRecord.finish_time);
       }
@@ -366,6 +377,7 @@ const updateRider = async (req, res) => {
     });
   }
 };
+
 const updateRiderNote = async (req, res) => {
   const { idRider, note } = req.params;
 
@@ -405,10 +417,12 @@ const updateRiderNote = async (req, res) => {
           start_time: Date.now().toString(),
         },
       });
+    }
 
+    if(note === "RUN" && category.independent_start === true) {
       await prisma.riders.update({
         where: {
-          id: Number(idRider),
+          id: Number(idRider)
         },
         data: {
           start_waktu: Date.now().toString(),
@@ -477,7 +491,9 @@ const updateRidersNote = async (req, res) => {
           start_time: Date.now().toString(),
         },
       });
+    }
 
+    if(note === "RUN" && category.independent_start === true) {
       await prisma.riders.updateMany({
         where: {
           id: {
