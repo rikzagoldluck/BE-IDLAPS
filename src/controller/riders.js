@@ -93,6 +93,8 @@ const record = async (mac) => {
         },
       });
 
+      
+
       if (riderRun.length < 1) {
         throw new Error("Rider with MAC: " + mac + " not run");
       }
@@ -149,8 +151,8 @@ const record = async (mac) => {
         },
       });
 
-      console.log("lap count: " + lap_count);
-      console.log("lap race: " + riderRun[0].categories.lap);
+      console.log("lap count: " + lap_count)
+      console.log("lap race: " + riderRun[0].categories.lap)
       if (parseInt(lap_count) === parseInt(riderRun[0].categories.lap)) {
         await prisma.riders.update({
           where: {
